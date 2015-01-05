@@ -41,13 +41,12 @@ angular.module('wtt')
 			},
 			{ name: 'comment', field: 'comment', enableSorting: false, visible: true, width: '*', minWidth: 20 }
 		],
-		exporterCsvLinkElement: angular.element(document.querySelectorAll(".custom-csv-link-location")),
+		exporterCsvLinkElement: angular.element(document.querySelectorAll('.custom-csv-link-location')),
 
 		onRegisterApi: function(gridApi) {
 			$scope.gridApi = gridApi;
 			gridApi.edit.on.afterCellEdit($scope, function(rowEntity, colDef, newValue, oldValue) {
-				$scope.msg.lastCellEdited = 'edited row id: ' + rowEntity.id + ' Column: ' + colDef.name 
-					+ ' newValue: ' + newValue + ' oldValue: ' + oldValue;
+				$scope.msg.lastCellEdited = 'edited row id: ' + rowEntity.id + ' Column: ' + colDef.name + ' newValue: ' + newValue + ' oldValue: ' + oldValue;
 				$scope.apply();
 			});
 		}
@@ -62,35 +61,29 @@ angular.module('wtt')
 
 	var _presentsListUri = 'http://localhost:3333/api/presents';
 	$http.get(_presentsListUri)
-	.success(function(data, status, headers, config) {
+	.success(function(data, status) {
 		var i = 0;
 		for(i=0; i < data.length; i++) {
 			data[i].datum = new Date(data[i].datum).toLocaleDateString(AppConfig.getCurrentLanguageKey());
-			// data[i].ptype = ptypeHash[data[i].ptype];
 		}
 		$scope.gridOptions.data = data;
 		$log.log('**** SUCCESS: GET(' + _presentsListUri + ') returns with ' + status);
     	//$log.log('data=<' + data + '>');
-    	//$log.log('headers=<' + headers + '>');
-    	//$log.log('config=<' + config + '>');
 	})
-	.error(function(data, status, headers, config) {
-  		// called asynchronously if an error occurs
-    	// or server returns response with an error status.
+	.error(function(data, status) {
+  		// called asynchronously if an error occurs or server returns response with an error status.
     	$log.log('**** ERROR:  GET(' + _presentsListUri + ') returns with ' + status);
-    	//$log.log('data=<' + data + '>');
-    	//$log.log('headers=<' + headers + '>');
-    	//$log.log('config=<' + config + '>');
+    	$log.log('data=<' + data + '>');
   	});	
 
   	$scope.export = function() {
-  		if ($scope.export_format == 'csv') {
-  			var myElement = angular.element(document.querySelectorAll(".custom-csv-link-location"));
-  			$scope.gridApi.exporter.csvExport($scope.export_row_type, $scope.export_column_type, myElement);
-  		} else if ($scope.export_format == 'pdf') {
-  			$scope.gridApi.exporter.pdfExport($scope.export_row_type, $scope.export_column_type);
+  		if ($scope.exportFormat === 'csv') {
+  			var myElement = angular.element(document.querySelectorAll('.custom-csv-link-location'));
+  			$scope.gridApi.exporter.csvExport($scope.exportRowType, $scope.exportColumnType, myElement);
+  		} else if ($scope.exportFormat === 'pdf') {
+  			$scope.gridApi.exporter.pdfExport($scope.exportRowType, $scope.exportColumnType);
   		} else {
-  			$log.log("**** ERROR: PresentsListCtrl.export(): unknown export_format: " + $scope.export_format);
+  			$log.log('**** ERROR: PresentsListCtrl.export(): unknown exportFormat: ' + $scope.exportFormat);
   		}
   	};
 
