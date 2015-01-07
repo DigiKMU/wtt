@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('wtt')
-.controller('WttListCtrl', function ($scope, $log, $http, uiGridConstants, $translate, $translatePartialLoader, AppConfig) {
+.controller('WttListCtrl', function ($scope, $log, $http, uiGridConstants, $translate, $translatePartialLoader, AppConfig, cfg) {
 	AppConfig.setCurrentApp('WTT', 'fa-clock-o', 'wtt', 'app/wtt/menu.html');
 	$translatePartialLoader.addPart('wtt');
 
@@ -59,20 +59,33 @@ angular.module('wtt')
 	// TODO: translate the columni headers ->  displayName = $translate.instant('ColDate')
 	// TODO: implement tests on test data
 
-	var _presentsListUri = 'http://localhost:3333/api/presents';
-	$http.get(_presentsListUri)
-	.success(function(data, status) {
+	var _wttListUri = 	cfg.OPENCRX_URI + cfg.WTT_SVC_PATH + 
+						'/provider/' + cfg.OPENCRX_PROVIDER + 
+						'/segment/' + cfg.OPENCRX_MANDANT + '/activityTracker';
+
+	var _promise = $http.get(_wttListUri);
+	/*
+	var _promise = $http({
+		method: 'GET',
+		url: 	_wttListUri,
+		auth: 	cfg.OPENCRX_AUTH,
+		headers: { 'Content-Type': 'application/json' }
+	});
+*/
+
+	_promise.success(function(data, status) {
 		var i = 0;
 		for(i=0; i < data.length; i++) {
 			data[i].datum = new Date(data[i].datum).toLocaleDateString(AppConfig.getCurrentLanguageKey());
 		}
 		$scope.gridOptions.data = data;
-		$log.log('**** SUCCESS: GET(' + _presentsListUri + ') returns with ' + status);
+		$log.log('**** SUCCESS: GET(' + _wttListUri + ') returns with ' + status);
     	//$log.log('data=<' + data + '>');
-	})
-	.error(function(data, status) {
+	});
+
+	_promise.error(function(data, status) {
   		// called asynchronously if an error occurs or server returns response with an error status.
-    	$log.log('**** ERROR:  GET(' + _presentsListUri + ') returns with ' + status);
+    	$log.log('**** ERROR:  GET(' + _wttListUri + ') returns with ' + status);
     	$log.log('data=<' + data + '>');
   	});	
 
