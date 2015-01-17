@@ -4,6 +4,7 @@ angular.module('wtt')
 .controller('WttListCtrl', function ($scope, $log, $http, uiGridConstants, $translate, $translatePartialLoader, cfg) {
 	cfg.GENERAL.CURRENT_APP = 'wtt';
 	$translatePartialLoader.addPart('wtt');
+	$log.log('WttCtrl/cfg = ' + JSON.stringify(cfg, null, '\t'));
 
 	$scope.msg = {};
 
