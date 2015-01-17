@@ -1,8 +1,8 @@
 'use strict';
 
 angular.module('wtt')
-.controller('WttListCtrl', function ($scope, $log, $http, uiGridConstants, $translate, $translatePartialLoader, AppConfig, cfg) {
-	AppConfig.setCurrentApp('WTT', 'fa-clock-o', 'wtt', 'app/wtt/menu.html');
+.controller('WttListCtrl', function ($scope, $log, $http, uiGridConstants, $translate, $translatePartialLoader, cfg) {
+	cfg.GENERAL.CURRENT_APP = 'wtt';
 	$translatePartialLoader.addPart('wtt');
 
 	$scope.msg = {};
@@ -22,24 +22,9 @@ angular.module('wtt')
 		// exporterCsvFilename: 'wtt.csv',
 
 		columnDefs: [
-			{ 	name: 'datum', field: 'datum', displayName: 'Date', visible: true, width: '*', 
-				sort: { direction: uiGridConstants.ASC }}, 
-			{ 	name: 'from', field: 'from', visible: true, width: '*' },
-			{ 	name: 'to', field: 'to', visible: true, width: '*' },
-			{ 	name: 'typ', field: 'ptype', displayName: 'Type', visible: true, width: '*', 
-				editDropdownFilter: 'translate', cellFilter: 'translate',
-				editableCellTemplate: 'ui-grid/dropdownEditor', 
-				editDropdownOptionsArray: [
-					{ id: 1, value: 'PTBirthday'},
-					{ id: 2, value: 'PTXmas'},
-					{ id: 3, value: 'PTOstern'},
-					{ id: 4, value: 'PTMatur'},
-					{ id: 5, value: 'PTKonfirmation'},
-					{ id: 6, value: 'PTHochzeit'},
-					{ id: 7, value: 'PTOther'}
-				]
-			},
-			{ name: 'comment', field: 'comment', enableSorting: false, visible: true, width: '*', minWidth: 20 }
+			{	name: 'identity', field: 'identity', displayName: 'id', visible: false },
+			{ 	name: 'name', field: 'name', displayName: 'Name', visible: true, width: '*' },
+			{ 	name: 'description', field: 'description', displayName: 'Description', visible: true, width: '*' }
 		],
 		exporterCsvLinkElement: angular.element(document.querySelectorAll('.custom-csv-link-location')),
 
@@ -58,28 +43,29 @@ angular.module('wtt')
 	// TODO: update/edit rows inline
 	// TODO: translate the columni headers ->  displayName = $translate.instant('ColDate')
 	// TODO: implement tests on test data
+	var OPENCRX_URI = 'http://demo.opencrx.org:80/opencrx-rest-CRX/org.opencrx.kernel.activity1';
+	var OPENCRX_PROVIDER = 'CRX'; 
+	var OPENCRX_MANDANT = 'Standard';
+	var _wttListUri = 	OPENCRX_URI + 
+						'/provider/' + OPENCRX_PROVIDER + 
+						'/segment/' + OPENCRX_MANDANT + '/activityTracker';
 
-	var _wttListUri = 	cfg.OPENCRX_URI + cfg.WTT_SVC_PATH + 
-						'/provider/' + cfg.OPENCRX_PROVIDER + 
-						'/segment/' + cfg.OPENCRX_MANDANT + '/activityTracker';
-
-	var _promise = $http.get(_wttListUri);
-	/*
 	var _promise = $http({
 		method: 'GET',
 		url: 	_wttListUri,
-		auth: 	cfg.OPENCRX_AUTH,
-		headers: { 'Content-Type': 'application/json' }
+		headers: { 
+			'Content-Type': 'application/json',
+			'Authorization': 'Basic ' + btoa('guest:guest')
+		}
 	});
-*/
 
 	_promise.success(function(data, status) {
-		var i = 0;
-		for(i=0; i < data.length; i++) {
-			data[i].datum = new Date(data[i].datum).toLocaleDateString(AppConfig.getCurrentLanguageKey());
-		}
-		$scope.gridOptions.data = data;
 		$log.log('**** SUCCESS: GET(' + _wttListUri + ') returns with ' + status);
+		$log.log('data.length=' + data.length); // + ', data.objects.length=' + data.objects.length);
+		for(var i=0; i < data.objects.length; i++) {
+			$log.log('******* data[' + i + ']: ' + data.objects[i].name);
+		}
+		$scope.gridOptions.data = data.objects;
     	//$log.log('data=<' + data + '>');
 	});
 
@@ -99,10 +85,5 @@ angular.module('wtt')
   			$log.log('**** ERROR: PresentsListCtrl.export(): unknown exportFormat: ' + $scope.exportFormat);
   		}
   	};
-
-	$scope.getLang = function() {
-		// $log.log('PresentsListCtrl.getLang() = ' + AppConfig.getCurrentLanguageKey());
-		return AppConfig.getCurrentLanguageKey();
-	};
 });
 
